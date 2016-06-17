@@ -47,7 +47,6 @@
 *
 *****************************************************************************/
 
-#include <Arduino.h>
 #include <stdio.h>
 #include <string.h>
 #include <SPI.h>
@@ -55,9 +54,9 @@
 #include "Spider_L3.h"
 
 // Configure your WiFi module pin connection.
-unsigned char WLAN_CS = 4;
-unsigned char WLAN_EN = 7;
-unsigned char WLAN_IRQ = 2;
+unsigned char WLAN_CS = 43;
+unsigned char WLAN_EN = 44;
+unsigned char WLAN_IRQ = 42;
 unsigned char WLAN_IRQ_INTNUM = 0;
 
 
@@ -69,9 +68,13 @@ void setup() {
     /* initial uart debug output interface. */
     Serial.begin(115200);
 
-    Serial.println(F("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+"));
-    Serial.println(F("     Spider L3 smart config demo.     "));
-    Serial.println(F("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+"));
+    while (!Serial) {
+      ; // wait for serial port to connect. Needed for Leonardo only
+    }
+
+    Serial.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+");
+    Serial.println("     Spider L3 smart config demo.     ");
+    Serial.println("=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+");
 
     /* initial status LED pin */
     pinMode(INDICATE_LED, OUTPUT);
@@ -81,12 +84,12 @@ void setup() {
     pinMode(SMART_CONFIG_PIN, INPUT);
 
     /* Initial Spider L3 spi interface*/
-    Serial.print(F("Starting Spider L3..."));
+    Serial.print("Starting Spider L3...");
     ret = Spider_begin();
     if(ret != 0){
         while(1);
     }
-    Serial.println(F("ok"));
+    Serial.println("ok");
 
     // Spider L3 SPI interface initial success, indicated LED signal.
     digitalWrite(INDICATE_LED, HIGH); 
@@ -94,26 +97,26 @@ void setup() {
     digitalWrite(INDICATE_LED, LOW);
 
     /* Checking GPIO pin selecting use smart config setting connect profile or connect to network */ 
-    Serial.print(F("Check select pin:"));
+    Serial.print("Check select pin:");
     Serial.print(SMART_CONFIG_PIN, DEC);
-    Serial.print(F(",level..."));
+    Serial.print(",level...");
 
     if(digitalRead(SMART_CONFIG_PIN) == HIGH){
-        Serial.println(F("HIGH"));
-        Serial.print(F("Starting smart config..."));
+        Serial.println("HIGH");
+        Serial.print("Starting smart config...");
         Spider_SmartConfig();
     }
     else{
-        Serial.println(F("LOW"));
-        Serial.print(F("Starting auto connect..."));
+        Serial.println("LOW");
+        Serial.print("Starting auto connect...");
         Spider_AutoConnect();
     }
-    Serial.println(F("ok"));
+    Serial.println("ok");
 
-    Serial.print(F("Waiting DHCP..."));
+    Serial.print("Waiting DHCP...");
     /* wait connection and Get DHCP address finished */
     while((Spider_CheckConnected() != 0) || (Spider_CheckDHCP() != 0));
-    Serial.println(F("ok"));
+    Serial.println("ok");
 
     // Spider L3 connect success, indicated LED signal.
     digitalWrite(INDICATE_LED, HIGH); 
@@ -127,15 +130,15 @@ void setup() {
     tNetappIpconfigRetArgs inf;
     netapp_ipconfig(&inf);
 
-    Serial.print(F("Device's IP address:"));
+    Serial.print("Device's IP address:");
     Serial.print(inf.aucIP[3] ,DEC);
-    Serial.print(F("."));
+    Serial.print(".");
     Serial.print(inf.aucIP[2] ,DEC);
-    Serial.print(F("."));
+    Serial.print(".");
     Serial.print(inf.aucIP[1] ,DEC);
-    Serial.print(F("."));
+    Serial.print(".");
     Serial.print(inf.aucIP[0] ,DEC);
-    Serial.print(F("\r\n"));
+    Serial.print("\r\n");
 }
 
 void loop() {

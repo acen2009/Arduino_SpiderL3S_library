@@ -220,7 +220,7 @@ void SpiReceiveHandler(void *pvBuffer)
 {	
 	tSLInformation.usEventOrDataReceived = 1;
 	tSLInformation.pucReceivedData = (UINT8 *)pvBuffer;
-
+    
 	hci_unsolicited_event_handler();
 }
 
@@ -270,7 +270,7 @@ void wlan_start(UINT16 usPatchesAvailableAtHost)
 
 	// Allocate the memory for the RX/TX data transactions
 	tSLInformation.pucTxCommandBuffer = (UINT8 *)wlan_tx_buffer;
-
+	
 	// init spi
 	SpiOpen(SpiReceiveHandler);
 
@@ -279,7 +279,7 @@ void wlan_start(UINT16 usPatchesAvailableAtHost)
 
 	// Chip enable: toggle WLAN EN line
 	tSLInformation.WriteWlanPin( WLAN_ENABLE );
-
+	
 	if (ulSpiIRQState)
 	{
 		// wait till the IRQ line goes low
@@ -293,14 +293,14 @@ void wlan_start(UINT16 usPatchesAvailableAtHost)
 		while(tSLInformation.ReadWlanInterruptPin() == 0)
 		{
 		}
-
+		
 		while(tSLInformation.ReadWlanInterruptPin() != 0)
 		{
 		}
 	}
-
+	
 	SimpleLink_Init_Start(usPatchesAvailableAtHost);
-
+	
 	// Read Buffer's size and finish
 	hci_command_send(HCI_CMND_READ_BUFFER_SIZE, tSLInformation.pucTxCommandBuffer, 0);
 	SimpleLinkWaitEvent(HCI_CMND_READ_BUFFER_SIZE, 0);
@@ -588,7 +588,7 @@ INT32 wlan_add_profile(UINT32 ulSecType,
 	UINT8* ucPf_OrKey,
 	UINT32 ulPassPhraseLen)
 {
-	UINT16 arg_len;
+	UINT16 arg_len = 0;
 	INT32 ret;
 	UINT8 *ptr;
 	INT32 i = 0;

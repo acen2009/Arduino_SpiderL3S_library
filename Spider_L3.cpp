@@ -62,7 +62,7 @@ static volatile unsigned char StopSmartConfig = 0;
 static volatile unsigned char SpiderConnected = 0;
 static volatile unsigned char SpiderDHCP = 0;
 static volatile unsigned char SpiderCanShutDown = 0;
-static volatile unsigned char SpiderARP_Flag = 0;
+
 /*-------------------------------------------------------------------
 
     The TI library calls this routine when asynchronous events happen.
@@ -101,15 +101,7 @@ void Spider_AsyncCallback(long lEventType, char * data, unsigned char length)
         case HCI_EVENT_CC3000_CAN_SHUT_DOWN:
             SpiderCanShutDown = 1;
             break;
-
-        case HCI_EVNT_ASYNC_ARP_DONE:
-            SpiderARP_Flag = SPIDER_ARP_FLAG_DONE;
-            break;  
-
-        case HCI_EVNT_ASYNC_ARP_WAITING:
-            SpiderARP_Flag = SPIDER_ARP_FLAG_PROC;
-            break;      
-
+                        
         default:
             break;      
     }
@@ -151,29 +143,22 @@ char *SendBootloaderPatch(unsigned long *Length)
 -----------------------------------------------------------------------*/
 int Spider_begin(void){
 
-    HW_Initialed = 0;
-    SmartConfigFinished = 0;
-    StopSmartConfig = 0;
-    SpiderConnected = 0;
-    SpiderDHCP = 0;
-    SpiderCanShutDown = 0;
-  
-    // Initial Arduino hardware interface connect with CC3000.
-    CC3000_Init();
+  // Initial Arduino hardware interface connect with CC3000.
+  CC3000_Init();
 
-    // Initial callback functions to wlan api.
-    wlan_init( Spider_AsyncCallback, SendFirmwarePatch, SendDriverPatch, SendBootloaderPatch, 
-               ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
+  // Initial callback functions to wlan api.
+  wlan_init( Spider_AsyncCallback, SendFirmwarePatch, SendDriverPatch, SendBootloaderPatch, 
+             ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
 
-    // Starting CC3000
-    wlan_start(0);
+  // Starting CC3000
+  wlan_start(0);
 
-    // Set CC3000 event masking, right now without ping report.
-    wlan_set_event_mask(HCI_EVNT_WLAN_KEEPALIVE|HCI_EVNT_WLAN_UNSOL_INIT|HCI_EVNT_WLAN_ASYNC_PING_REPORT);
+  // Set CC3000 event masking, right now without ping report.
+  wlan_set_event_mask(HCI_EVNT_WLAN_KEEPALIVE|HCI_EVNT_WLAN_UNSOL_INIT|HCI_EVNT_WLAN_ASYNC_PING_REPORT);
 
-    //Initial success.
-    HW_Initialed = 1;
-    return 0;
+  //Initial success.
+  HW_Initialed = 1;
+  return 0;
 }
 /*------------------------------------------------------------------------
   Spider_close
@@ -185,15 +170,8 @@ int Spider_begin(void){
 -----------------------------------------------------------------------*/
 int Spider_close(void){
   
-  //wlan_stop();
-  WriteWlanPin(0);
-  SpiClose();
+  wlan_stop();
   HW_Initialed = 0;
-  SmartConfigFinished = 0;
-  StopSmartConfig = 0;
-  SpiderConnected = 0;
-  SpiderDHCP = 0;
-  SpiderCanShutDown = 0;
   return 0;
 }
 /*------------------------------------------------------------------------
@@ -212,13 +190,13 @@ int Spider_SmartConfig(void){
     // Reset all the previous configuration
     wlan_ioctl_set_connection_policy(0, 0, 0);
     wlan_ioctl_del_profile(255);
-
+    
     //Wait until Spider is disconnected
     while (SpiderConnected == 1){
         delay(1);
         hci_unsolicited_event_handler();
     }
-
+    
     // create new entry for AES encryption key
     nvmem_create_entry(NVMEM_AES128_KEY_FILEID, AES128_KEY_SIZE);
 
@@ -337,14 +315,6 @@ int Spider_Disconnect(void){
       return -2;
     }
 
-    while((SpiderDHCP != 0) && (SpiderConnected != 0));
-
-    SmartConfigFinished = 0;
-    StopSmartConfig = 0;
-    SpiderConnected = 0;
-    SpiderDHCP = 0;
-    SpiderCanShutDown = 0;
-
     return 0;
 }
 
@@ -374,9 +344,9 @@ int Spider_Connect(unsigned long sec_mode, char* tar_ssid, char* tar_password){
   wlan_ioctl_set_connection_policy(0, 0, 0);
 
   // Check and wait until CC3000 disconnect from current network.
-  //while (SpiderConnected == 1) {
-  //  delay(100);
-  //}
+  while (SpiderConnected == 1) {
+    delay(100);
+  }
   
   // Connect to AP
   ret = wlan_connect(sec_mode, tar_ssid, strlen(tar_ssid), 0, (unsigned char*)tar_password, strlen(tar_password));
@@ -387,9 +357,9 @@ int Spider_Connect(unsigned long sec_mode, char* tar_ssid, char* tar_password){
   }
 
   // Wait connect flag.
-  //while(SpiderConnected != 1){
-  //  delay(100);
-  //}
+  while(SpiderConnected != 1){
+    delay(100);
+  }
 
   return 0;
 }
@@ -425,26 +395,4 @@ int Spider_CheckConnected(void){
   else{
     return -1;
   }
-}
-
-/*------------------------------------------------------------------------
-  
-  Spider_Start_ARP_EVENT
-  Starting ARP event, set flag.
-
------------------------------------------------------------------------*/
-void Spider_Start_ARP_EVENT(void){
-  SpiderARP_Flag = SPIDER_ARP_FLAG_INIT;
-}
-
-/*------------------------------------------------------------------------
-  
-  Spider_CheckConnected
-  Check CC3000 get ip address from DHCP server or not. 
-
-  return  1, please wait ARP event complete.
-  return  0, no ARP event.
------------------------------------------------------------------------*/
-unsigned char Spider_Chk_ARP_EVENT(void){
-  return SpiderARP_Flag;
 }

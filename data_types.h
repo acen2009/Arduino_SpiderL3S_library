@@ -62,43 +62,43 @@ extern "C" {
 #define OK          		(0)
 #endif
 
-#ifndef _INT8
-#define _INT8
+#ifndef _INT8_L3S
+#define _INT8_L3S
 typedef signed char   		INT8;
 #endif
 
-#ifndef _UINT8
-#define _UINT8
-typedef unsigned char   	UINT8;
+#ifndef _UINT8_L3S
+#define _UINT8_L3S
+typedef unsigned char         UINT8;
 #endif
 
-#ifndef _INT16
-#define _INT16
+#ifndef _INT16_L3S
+#define _INT16_L3S
 typedef signed short  		INT16;
 #endif
 
-#ifndef _UINT16
-#define _UINT16
+#ifndef _UINT16_L3S
+#define _UINT16_L3S
 typedef unsigned short   	UINT16;
 #endif
 
-#ifndef _BOOLEAN
-#define _BOOLEAN
+#ifndef _BOOLEAN_L3S
+#define _BOOLEAN_L3S
 typedef unsigned char   	BOOLEAN;
 #endif
 
-#ifndef _INT32
-#define _INT32
+#ifndef _INT32_L3S
+#define _INT32_L3S
 typedef signed long   		INT32;
 #endif
 
-#ifndef _UINT32
-#define _UINT32
+#ifndef _UINT32_L3S
+#define _UINT32_L3S
 typedef unsigned long   	UINT32;
 #endif
 
-typedef int             	INT;
-typedef char            	CHAR;
+typedef int             INT;
+typedef char            CHAR;
 
 #ifdef	__cplusplus
 }

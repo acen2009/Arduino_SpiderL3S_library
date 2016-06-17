@@ -40,6 +40,7 @@
 //
 //*****************************************************************************
 
+#include <string.h>
 #include "cc3000_common.h"
 #include "hci.h"
 #include "spider_spi.h"
@@ -100,8 +101,9 @@ INT32 hci_data_send(UINT8 ucOpcode,
 	const UINT8 *ucTail,
 	UINT16 usTailLength)
 {
-	(void)(ucTail);
 	UINT8 *stream;
+	
+	(void)(ucTail);
 
 	stream = ((ucArgs) + SPI_HEADER_SIZE);
 
